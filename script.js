@@ -1,4 +1,4 @@
-﻿// --- Firebase configuration ---
+// --- Firebase configuration ---
 const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -11,29 +11,94 @@ if (!firebase.apps.length) {
 }
 const db = firebase.database();
 
+const alertSound = new Audio('https://actions.google.com/sounds/v1/alarms/dinner_bell_triangle.ogg');
+alertSound.preload = 'auto';
+alertSound.volume = 1.0;
+alertSound.loop = false;
+
+// --- COMPLETE menuData (bilingual, categorized, exact prices) ---
 const menuData = [
-    {
-        category: 'Dürüm',
-        items: [
-            { name: 'فلافل Dürüm', price: 60, label: 'فلافل Dürüm', thumb: 'ف' },
-            { name: 'إسكالوب Dürüm', price: 90, label: 'إسكالوب Dürüm', thumb: 'إ', special: true }
-        ]
-    },
-    {
-        category: 'Drinks',
-        items: [
-            { name: 'ماء بارد', price: 10, label: 'ماء بارد', thumb: 'م' },
-            { name: 'شاي مثلج', price: 25, label: 'شاي مثلج', thumb: 'ش' }
-        ]
-    },
-    {
-        category: 'Extras',
-        items: [
-            { name: 'بطاطا مقلية', price: 30, label: 'بطاطا مقلية', thumb: 'ب' },
-            { name: 'صلصة حارة', price: 8, label: 'صلصة حارة', thumb: 'ص' }
-        ]
-    }
+  { category: 'فلافل Dürüm', nameAr: 'فلافل لف', nameTr: 'Falafel Dürüm', price: 100 },
+  { category: 'فلافل Dürüm', nameAr: 'فلافل دبل', nameTr: 'Falafel extra Dürüm', price: 115 },
+  { category: 'فلافل Dürüm', nameAr: 'فلافل مع فول', nameTr: 'Falafel ve Bakla Dürüm', price: 115 },
+  { category: 'فلافل Dürüm', nameAr: 'فلافل مع بطاطا', nameTr: 'Falafel ve Patates Dürüm', price: 115 },
+  { category: 'فلافل Dürüm', nameAr: 'فلافل عربي مع بطاطا', nameTr: 'Falafel Patates Durum', price: 125 },
+
+  { category: 'شاميات', nameAr: 'فول بطحينة', nameTr: 'Tahinli yoğurtlu koru bakla', price: 145 },
+  { category: 'شاميات', nameAr: 'فول مدمس بزيت', nameTr: 'Zeytin yağlı koru bakla', price: 145 },
+  { category: 'شاميات', nameAr: 'فول بطحينة مهروس', nameTr: 'Tahinli koru bakla ezmesi', price: 145 },
+  { category: 'شاميات', nameAr: 'فول بزيت مهروس', nameTr: 'Zeytin yağlı koru bakla ezmesi', price: 145 },
+  { category: 'شاميات', nameAr: 'حمص حب بطحينة', nameTr: 'Tahinli nohut', price: 145 },
+  { category: 'شاميات', nameAr: 'حمص حب بزيت', nameTr: 'Zeytin yağlı nohut', price: 145 },
+  { category: 'شاميات', nameAr: 'حمص بطحينة (مسبحة)', nameTr: 'Humus', price: 140 },
+  { category: 'شاميات', nameAr: 'فتة بزيت بلدي', nameTr: 'Sıvıyağlı fatte', price: 160 },
+  { category: 'شاميات', nameAr: 'فتة بسمنة', nameTr: 'Tereyağlı fatte', price: 160 },
+  { category: 'شاميات', nameAr: 'فتة بالكاجو', nameTr: 'Kajulu fatte', price: 245 },
+  { category: 'شاميات', nameAr: 'فتة بفقسة', nameTr: 'Kıyma fatte', price: 245 },
+  { category: 'شاميات', nameAr: 'فتة باللحمة', nameTr: 'Kıymalı fatte', price: 270 },
+  { category: 'شاميات', nameAr: 'مسبحة باللحمة', nameTr: 'Kıymalı humus', price: 245 },
+  { category: 'شاميات', nameAr: 'مسبحة بالكاجو', nameTr: 'Kajulu nohut', price: 250 },
+  { category: 'شاميات', nameAr: 'متبل باذنجان', nameTr: 'Tahinli yoğurtlu patlıcan', price: 145 },
+  { category: 'شاميات', nameAr: 'فلافل 6 قرص', nameTr: '6 adet Falafel', price: 110 },
+  { category: 'شاميات', nameAr: 'فلافل 10 قرص', nameTr: '10 adet Falafel', price: 160, notes: 'STRICT_10_PIECES' },
+
+  { category: 'غربي - Dürüm', nameAr: 'كريسبي Dürüm', nameTr: 'Acılı çıtır tavuk Dürüm', price: 140 },
+  { category: 'غربي - وجبة', nameAr: 'كريسبي وجبة', nameTr: 'Acılı çıtır tavuk Porsiyon', price: 235 },
+  { category: 'غربي - Dürüm', nameAr: 'سكالوب Dürüm', nameTr: 'Galata ünlü çıtır tavuk Dürüm', price: 140 },
+  { category: 'غربي - وجبة', nameAr: 'سكالوب وجبة', nameTr: 'Galata ünlü çıtır tavuk Porsiyon', price: 235 },
+  { category: 'غربي - Dürüm', nameAr: 'زنجر Dürüm', nameTr: 'Çıtır tavuk göğsü kızarması Dürüm', price: 140 },
+  { category: 'غربي - وجبة', nameAr: 'زنجر وجبة', nameTr: 'Çıtır tavuk göğsü kızarması Porsiyon', price: 240 },
+  { category: 'غربي - Dürüm', nameAr: 'فاهيتا Dürüm', nameTr: 'Fajita Dürüm', price: 140 },
+  { category: 'غربي - وجبة', nameAr: 'فاهيتا وجبة', nameTr: 'Fajita Porsiyon', price: 240 },
+  { category: 'غربي - Dürüm', nameAr: 'فرانسيسكو Dürüm', nameTr: 'Mantar kaşarlı sote Dürüm', price: 140 },
+  { category: 'غربي - وجبة', nameAr: 'فرانسيسكو وجبة', nameTr: 'Mantar kaşarlı سote Porsiyon', price: 235 },
+  { category: 'غربي - Dürüm', nameAr: 'مكسيكي Dürüm', nameTr: 'Biberli tavuk sote acılı Dürüm', price: 140 },
+  { category: 'غربي - وجبة', nameAr: 'مكسيكي وجبة', nameTr: 'Biberli tavuk sote acılı Porsiyon', price: 235 },
+  { category: 'غربي - Dürüm', nameAr: 'شيش Dürüm', nameTr: 'Tavuk şiş Dürüm', price: 115 },
+  { category: 'غربي - وجبة', nameAr: 'شيش وجبة', nameTr: 'Tavuk şiş Porsiyon', price: 160 },
+  { category: 'غربي - Dürüm', nameAr: 'بطاطا Dürüm', nameTr: 'Patates Dürüm', price: 150 },
+  { category: 'غربي - وجبة', nameAr: 'بطاطا وجبة', nameTr: 'Patates Porsiyon', price: 180 },
+  { category: 'غربي - Dürüm', nameAr: 'بطاطا مع قشقوان Dürüm', nameTr: 'Kaşarlı Patates Dürüm', price: 175 },
+  { category: 'غربي - وجبة', nameAr: 'بطاطا مع قشقوان وجبة', nameTr: 'Kaşarlı Patates Porsiyon', price: 220 },
+
+  { category: 'سلطات', nameAr: 'سلطة شرقية', nameTr: 'Mevsim salatası', price: 130 },
+  { category: 'سلطات', nameAr: 'فتوش', nameTr: 'Fettuş', price: 130 },
+  { category: 'سلطات', nameAr: 'تبولة', nameTr: 'Tabboule', price: 140 },
+  { category: 'سلطات', nameAr: 'سلطة روسية', nameTr: 'Rus salatası', price: 130 },
+  { category: 'سلطات', nameAr: 'زينة خضرة', nameTr: 'Yeşillik', price: 30 },
+  { category: 'سلطات', nameAr: 'سرفيس', nameTr: 'Servis', price: 30 },
+  { category: 'سلطات', nameAr: 'مايونيز', nameTr: 'Mayonez', price: 25 },
+
+  // --- قسم المشروبات ---
+  { category: 'مشروبات', nameAr: 'كولا', nameTr: 'Kola', price: 50 },
+  { category: 'مشروبات', nameAr: 'فانتا', nameTr: 'Fanta', price: 50 },
+  { category: 'مشروبات', nameAr: 'عيران', nameTr: 'Ayran', price: 25 },
+  { category: 'مشروبات', nameAr: 'افشار', nameTr: 'Avşar', price: 35 },
+  { category: 'مشروبات', nameAr: 'شاملجا', nameTr: 'Çamlıca', price: 40 },
+  { category: 'مشروبات', nameAr: 'كازوز', nameTr: 'Gazoz', price: 40 },
+  { category: 'مشروبات', nameAr: 'ماء', nameTr: 'Su', price: 15 },
+  { category: 'مشروبات', nameAr: 'شاي', nameTr: 'Çay', price: 20 },
 ];
+
+// helper: return bilingual label
+function bilingualLabel(item) {
+    return `${item.nameAr} / ${item.nameTr}`;
+}
+
+// helper: convert defaultModifiers array to modifiers object
+function modifiersFromDefaults(defaults) {
+    const mod = { cheese: true, lettuce: true };
+    if (!Array.isArray(defaults)) return mod;
+    defaults.forEach(d => {
+        if (typeof d !== 'string') return;
+        const lowered = d.trim();
+        if (/بدون\s*جبن/.test(lowered)) mod.cheese = false;
+        if (/بدون\s*خس/.test(lowered)) mod.lettuce = false;
+        if (/no\s*cheese/i.test(lowered)) mod.cheese = false;
+        if (/no\s*lettuce/i.test(lowered)) mod.lettuce = false;
+    });
+    return mod;
+}
 
 const bilingualMap = {
     items: {
@@ -56,6 +121,7 @@ let cart = [];
 let activeModifierSelection = { cheese: false, lettuce: false };
 let pendingSpecialItem = null;
 let renderedOrders = {};
+let lastAddedItemId = null;
 
 function openWaiterMode() {
     document.getElementById('login-screen').classList.remove('active');
@@ -68,6 +134,14 @@ function openCashierMode() {
     document.getElementById('login-screen').classList.remove('active');
     document.getElementById('waiter-screen').classList.remove('active');
     document.getElementById('cashier-screen').classList.add('active');
+    try {
+        alertSound.play().then(() => {
+            alertSound.pause();
+            alertSound.currentTime = 0;
+        }).catch(e => console.log('Audio unlock failed:', e));
+    } catch (e) {
+        console.log('Audio unlock exception:', e);
+    }
     renderCashierSummary();
     listenForNewOrders();
 }
@@ -82,35 +156,123 @@ function switchCategory(category) {
 
 function renderMenu() {
     const container = document.getElementById('menu-grid');
+    if (!container) return;
     container.innerHTML = '';
-    const category = menuData.find(cat => cat.category === activeCategory);
-    if (!category) return;
 
-    category.items.forEach(item => {
-        const card = document.createElement('article');
-        card.className = 'menu-card';
-        card.innerHTML = `
-            <div class="menu-thumb">${item.thumb}</div>
-            <div class="menu-copy">
-                <span class="menu-name">${item.label}</span>
-                <span class="menu-price">${item.price} ليرة</span>
-            </div>
-            <div class="menu-action">
-                <button class="menu-add-btn" onclick="handleAddItem('${item.name}', ${item.price}, ${item.special ? 'true' : 'false'})">+</button>
-            </div>
-        `;
-        container.appendChild(card);
+    // Group items by category preserving order
+    const grouped = {};
+    menuData.forEach(item => {
+        if (!grouped[item.category]) grouped[item.category] = [];
+        grouped[item.category].push(item);
+    });
+
+    Object.keys(grouped).forEach(categoryName => {
+        const categoryGroup = document.createElement('section');
+        categoryGroup.className = 'menu-category-group';
+
+        const header = document.createElement('div');
+        header.className = 'menu-category-header';
+        header.innerHTML = `<h3>${categoryName}</h3>`;
+        categoryGroup.appendChild(header);
+
+        const grid = document.createElement('div');
+        grid.className = 'menu-category-grid';
+
+        grouped[categoryName].forEach(item => {
+            const listItem = document.createElement('article');
+            listItem.className = 'menu-item';
+            const label = bilingualLabel(item);
+            listItem.innerHTML = `
+                <div class="menu-item-content">
+                    <div class="menu-item-text">
+                        <span class="menu-item-name">${item.nameAr}</span>
+                        <span class="menu-item-subtitle">${item.nameTr}</span>
+                    </div>
+                    <span class="menu-item-price">${Number(item.price).toFixed(0)} ليرة</span>
+                </div>
+                <button class="menu-add-btn">+</button>
+            `;
+
+            const addBtn = listItem.querySelector('.menu-add-btn');
+            addBtn.addEventListener('click', () => handleAddItem(item));
+
+            grid.appendChild(listItem);
+        });
+
+        categoryGroup.appendChild(grid);
+        container.appendChild(categoryGroup);
     });
 }
 
-function handleAddItem(name, price, special) {
-    if (special) {
-        pendingSpecialItem = { name, price };
-        activeModifierSelection = { cheese: false, lettuce: false };
-        openModifierModal();
+function createMenuThumbHTML(item) {
+    const imageSrc = item.imagePath ? String(item.imagePath).trim() : '';
+    const fallbackChar = (item.nameAr && item.nameAr.charAt(0)) || 'ف';
+    const pieceBadge = /فلافل/i.test(item.nameAr || '') ? `<span class="falafel-count">10 قطع</span>` : '';
+    if (imageSrc) {
+        return `<img src="${imageSrc}" alt="${bilingualLabel(item)}" width="720" height="540" loading="lazy" />${pieceBadge}`;
+    }
+    return `<div class="menu-thumb-fallback">${fallbackChar}</div>${pieceBadge}`;
+}
+
+function addNewMenuItem(name, price, imagePath = '', defaultExclusions = null) {
+    if (typeof name !== 'string' || !name.trim()) {
+        throw new Error('اسم المنتج مطلوب لإضافته إلى القائمة');
+    }
+    const trimmedName = String(name).trim();
+    const normalizedName = trimmedName.replace(/sandwich/gi, 'Dürüm');
+    const ensuredDurum = normalizedName.includes('Dürüm') ? normalizedName : `${normalizedName} Dürüm`;
+    const finalName = ensuredDurum;
+
+    const category = resolveMenuCategory(finalName);
+    const exclusions = defaultExclusions ?? (finalName.includes('Escalope Dürüm')
+        ? { cheese: false, lettuce: false }
+        : { cheese: true, lettuce: true });
+
+    const item = {
+        name: finalName,
+        label: finalName,
+        price: Number(price),
+        imagePath: String(imagePath).trim(),
+        thumb: finalName.charAt(0),
+        special: finalName.includes('Escalope Dürüm'),
+        defaultExclusions: exclusions,
+        modifiers: { ...exclusions }
+    };
+
+    if (/falafel/i.test(finalName) || /فلافل/.test(finalName)) {
+        item.falafelPieces = 10;
+    }
+
+    let categoryData = menuData.find(cat => cat.category === category);
+    if (!categoryData) {
+        categoryData = { category, items: [] };
+        menuData.push(categoryData);
+    }
+    categoryData.items.push(item);
+    if (activeCategory === category) {
+        renderMenu();
+    }
+    return item;
+}
+
+function resolveMenuCategory(name) {
+    const lower = name.toLowerCase();
+    if (/drink|ماء|شاي|juice|عصير|كوكاكولا|بيبسي/.test(lower)) return 'Drinks';
+    if (/potato|fries|بطاطا|صلصة|إضافات|sauce/.test(lower)) return 'Extras';
+    return 'Dürüm';
+}
+
+function handleAddItem(item) {
+    const displayName = bilingualLabel(item);
+    const price = Number(item.price);
+    // If item defines defaultModifiers, apply them automatically (e.g., اسكالوب)
+    if (Array.isArray(item.defaultModifiers) && item.defaultModifiers.length > 0) {
+        const mods = modifiersFromDefaults(item.defaultModifiers);
+        addToCart(displayName, price, mods);
         return;
     }
-    addToCart(name, price, { cheese: true, lettuce: true });
+    // default behavior
+    addToCart(displayName, price, { cheese: true, lettuce: true });
 }
 
 function openModifierModal() {
@@ -149,20 +311,21 @@ function confirmModifierSelection() {
 
 function addToCart(name, price, modifiers = { cheese: true, lettuce: true }) {
     const item = {
-        id: Date.now() + Math.random(),
+        id: `cart-${Date.now()}-${Math.round(Math.random() * 10000)}`,
         name,
         price: Number(price),
         quantity: 1,
         modifiers: { cheese: Boolean(modifiers.cheese), lettuce: Boolean(modifiers.lettuce) }
     };
+    lastAddedItemId = item.id;
     cart.push(item);
     renderCart();
-    toggleBottomSheet(true);
 }
 
 function renderCart() {
     const container = document.getElementById('cart-items-sheet');
     container.innerHTML = '';
+    const justAddedId = lastAddedItemId;
 
     if (cart.length === 0) {
         container.innerHTML = '<div class="order-board empty">السلة فارغة. أضف عناصر من القائمة.</div>';
@@ -171,11 +334,13 @@ function renderCart() {
     cart.forEach(item => {
         const itemEl = document.createElement('div');
         itemEl.className = 'cart-item-sheet';
+        if (item.id === justAddedId) {
+            itemEl.classList.add('newly-added');
+        }
         itemEl.innerHTML = `
             <div class="cart-item-top">
                 <div class="cart-item-meta">
                     <span class="cart-item-title">${item.name}</span>
-                    <span class="cart-item-modifier">${getBilingualModifierText(item.modifiers)}</span>
                 </div>
                 <button class="ghost-btn" onclick="removeCartItem('${item.id}')">🗑️</button>
             </div>
@@ -189,8 +354,14 @@ function renderCart() {
             </div>
         `;
         container.appendChild(itemEl);
+        if (item.id === justAddedId) {
+            window.requestAnimationFrame(() => {
+                itemEl.classList.remove('newly-added');
+            });
+        }
     });
 
+    lastAddedItemId = null;
     document.getElementById('cart-count').textContent = cart.length;
     document.getElementById('sheet-total').textContent = `${calculateTotal()} ليرة`;
 }
@@ -215,11 +386,19 @@ function calculateTotal() {
     }, 0);
 }
 
-function toggleBottomSheet(show) {
-    const sheet = document.getElementById('cart-sheet');
-    const openState = show === undefined ? !sheet.classList.contains('open') : show;
-    sheet.classList.toggle('open', openState);
-    sheet.setAttribute('aria-hidden', !openState);
+function openCartView() {
+    const menuView = document.getElementById('menu-view');
+    const cartView = document.getElementById('cart-view');
+    if (menuView) menuView.classList.remove('active');
+    if (cartView) cartView.classList.add('active');
+    renderCart();
+}
+
+function openMenuView() {
+    const menuView = document.getElementById('menu-view');
+    const cartView = document.getElementById('cart-view');
+    if (cartView) cartView.classList.remove('active');
+    if (menuView) menuView.classList.add('active');
 }
 
 function isEscalopeDurum(name) {
@@ -277,7 +456,7 @@ function sendOrderToCashier() {
         newOrderRef.set(orderPayload).then(() => {
             alert('تم إرسال الطلب إلى المطبخ بنجاح!');
             clearCart();
-            toggleBottomSheet(false);
+            openMenuView();
         }).catch(error => {
             console.error('خطأ في إرسال الطلب إلى Firebase:', error);
             alert('فشل الإرسال. حاول مرة أخرى.');
@@ -318,6 +497,12 @@ function listenForNewOrders() {
             const id = order.orderId || snapshot.key;
             if (renderedOrders[id]) return;
             renderOrderCard(order, true);
+            try {
+                alertSound.currentTime = 0;
+                alertSound.play();
+            } catch (error) {
+                console.error('Audio blocked by browser:', error);
+            }
             updateCashierStats();
         });
 
@@ -364,7 +549,7 @@ function renderOrderCard(order, isNew = false) {
     const canComplete = status !== 'جاهز';
 
     const card = document.createElement('article');
-    card.className = `order-card animate-move`;
+    card.className = `order-card animate-move${isNew ? ' pulse' : ''}`;
     card.dataset.orderId = orderId;
     card.dataset.total = Number(order.total) || 0;
     card.dataset.status = status;
@@ -401,6 +586,9 @@ function renderOrderCard(order, isNew = false) {
         container.innerHTML = '';
     }
     container.prepend(card);
+    if (isNew) {
+        window.setTimeout(() => card.classList.remove('pulse'), 1800);
+    }
     updateColumnCounts();
 }
 
@@ -630,7 +818,26 @@ function printReceipt(order) {
         const orderDate = order.date || new Date().toLocaleDateString('ar-EG');
         const orderTime = order.time || new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
 
-        let receiptHTML = `
+        const itemsHTML = items.map(item => {
+            const quantity = Number(item.quantity);
+            const price = Number(item.price);
+            const lineTotal = Number.isFinite(quantity) && Number.isFinite(price) ? quantity * price : 0;
+            const modifierText = getBilingualModifierText(item.modifiers);
+            return `
+                <div class="grid-cell qty">${quantity}</div>
+                <div class="grid-cell item">${getBilingualItemName(item.name)}</div>
+                <div class="grid-cell price">${price} TL</div>
+                <div class="grid-cell total">${lineTotal} TL</div>
+                ${modifierText ? `
+                    <div class="grid-cell qty"></div>
+                    <div class="grid-cell item item-subrow">${modifierText}</div>
+                    <div class="grid-cell price"></div>
+                    <div class="grid-cell total"></div>
+                ` : ''}
+            `;
+        }).join('');
+
+        const receiptHTML = `
             <div class="receipt-print">
                 <div class="receipt-header">
                     <div class="receipt-logo">ف</div>
@@ -640,41 +847,24 @@ function printReceipt(order) {
                     </div>
                 </div>
                 <div class="receipt-meta">
-                    <div><span>التاريخ:</span><strong>${orderDate}</strong></div>
-                    <div><span>الوقت:</span><strong>${orderTime}</strong></div>
-                    <div><span>رقم الطلب:</span><strong>${orderId}</strong></div>
-                    <div><span>طاولة:</span><strong>${order.tableNumber}</strong></div>
+                    <div><span>التاريخ:</span> <strong>${orderDate}</strong></div>
+                    <div><span>الوقت:</span> <strong>${orderTime}</strong></div>
+                    <div><span>رقم الطلب:</span> <strong>${orderId}</strong></div>
+                    <div><span>الطاولة:</span> <strong>${order.tableNumber}</strong></div>
                 </div>
                 <div class="receipt-grid">
                     <div class="grid-header qty">QTY</div>
                     <div class="grid-header item">ITEM</div>
                     <div class="grid-header price">PRICE</div>
                     <div class="grid-header total">TOTAL</div>
-                    ${items.map(item => {
-                        const quantity = Number(item.quantity);
-                        const price = Number(item.price);
-                        const lineTotal = Number.isFinite(quantity) && Number.isFinite(price) ? quantity * price : 0;
-                        const modifierText = getBilingualModifierText(item.modifiers);
-                        return `
-                            <div class="grid-cell qty">${quantity}</div>
-                            <div class="grid-cell item">${getBilingualItemName(item.name)}</div>
-                            <div class="grid-cell price">${price} TL</div>
-                            <div class="grid-cell total">${lineTotal} TL</div>
-                            ${modifierText ? `
-                                <div class="grid-cell qty"></div>
-                                <div class="grid-cell item item-subrow">${modifierText}</div>
-                                <div class="grid-cell price"></div>
-                                <div class="grid-cell total"></div>
-                            ` : ''}
-                        `;
-                    }).join('')}
+                    ${itemsHTML}
                 </div>
                 <div class="receipt-divider"></div>
                 <div class="receipt-summary">
-                    <div class="label">Subtotal</div>
+                    <div class="label">المجموع الفرعي / Ara Toplam</div>
                     <div class="value">${totalAmount} TL</div>
-                    <div class="label grand-label">المجموع الكلي / Toplam Tutar</div>
-                    <div class="value grand-total">${totalAmount} TL</div>
+                    <div class="label">المجموع الكلي / Toplam Tutar</div>
+                    <div class="value">${totalAmount} TL</div>
                 </div>
                 <div class="receipt-footer">شكراً لزيارتكم - Afiyet Olsun</div>
             </div>
