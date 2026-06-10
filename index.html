@@ -1,0 +1,171 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>فلافل الدمشقي - النظام اللحظي</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+    <div id="login-screen" class="screen active screen-center">
+        <div class="card glass-panel login-card">
+            <div class="brand-mark">
+                <div class="brand-icon">ف</div>
+                <div>
+                    <h1>فلافل الدمشقي</h1>
+                    <p>POS نظام متكامل للكرسون والكاشير</p>
+                </div>
+            </div>
+            <div class="login-actions">
+                <button class="primary-btn" onclick="openWaiterMode()">📱 واجهة الكرسون</button>
+                <button class="secondary-btn" onclick="openCashierMode()">💻 واجهة الكاشير</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="waiter-screen" class="screen">
+        <header class="page-header">
+            <div>
+                <span class="eyebrow">كرسون فلافل الدمشقي</span>
+                <h2>تسجيل الطلبات</h2>
+            </div>
+            <button class="ghost-btn" onclick="openCashierMode()">انتقال للكاشير</button>
+        </header>
+
+        <section class="category-tabs" aria-label="تصنيفات القائمة">
+            <button class="tab active" data-category="Dürüm" onclick="switchCategory('Dürüm')">Dürüm</button>
+            <button class="tab" data-category="Drinks" onclick="switchCategory('Drinks')">مشروبات</button>
+            <button class="tab" data-category="Extras" onclick="switchCategory('Extras')">إضافات</button>
+        </section>
+
+        <section class="order-controls glass-panel" aria-label="تفاصيل الطلب">
+            <label class="input-group">
+                <span>رقم الطاولة</span>
+                <input id="table-number" type="number" min="1" placeholder="مثلاً 5">
+            </label>
+            <button class="success-btn" onclick="toggleBottomSheet(true)">عرض السلة وإرسال</button>
+        </section>
+
+        <section id="menu-grid" class="menu-grid"></section>
+
+        <footer class="bottom-actions">
+            <button id="open-cart-btn" class="primary-btn" onclick="toggleBottomSheet(true)">عرض السلة</button>
+            <div class="summary-pill">
+                <span>العناصر</span>
+                <strong id="cart-count">0</strong>
+            </div>
+        </footer>
+
+        <div id="cart-sheet" class="bottom-sheet" aria-hidden="true">
+            <div class="sheet-handle" onclick="toggleBottomSheet()"></div>
+            <div class="sheet-header">
+                <div>
+                    <h3>السلة الذكية</h3>
+                    <p id="sheet-subtitle">تحكم كامل بالطلب قبل الإرسال</p>
+                </div>
+                <button class="ghost-btn" onclick="toggleBottomSheet(false)">إغلاق</button>
+            </div>
+            <div id="cart-items-sheet" class="cart-items-sheet"></div>
+            <div class="sheet-summary">
+                <div>
+                    <span>الإجمالي</span>
+                    <strong id="sheet-total">0 ليرة</strong>
+                </div>
+                <button class="success-btn" onclick="sendOrderToCashier()">إرسال الطلب</button>
+            </div>
+        </div>
+
+        <div id="modifier-modal" class="modal-overlay hidden" aria-hidden="true">
+            <div class="modal-panel glass-panel">
+                <div class="modal-header">
+                    <div>
+                        <p class="eyebrow">إسكالوب Dürüm</p>
+                        <h3>تخصيص سريع</h3>
+                    </div>
+                    <button class="ghost-btn" onclick="closeModifierModal()">✕</button>
+                </div>
+                <p class="modal-description">افتراضي بدون جبنة وبدون خس. اختر الإضافات السريعة إذا طلب الزبون.</p>
+                <div class="chip-grid">
+                    <button id="modifier-cheese" class="chip" onclick="toggleModifierChip('cheese')">أضف جبنة</button>
+                    <button id="modifier-lettuce" class="chip" onclick="toggleModifierChip('lettuce')">أضف خس</button>
+                </div>
+                <div class="modal-actions">
+                    <button class="secondary-btn" onclick="closeModifierModal()">إلغاء</button>
+                    <button class="primary-btn" onclick="confirmModifierSelection()">أضف للسلة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="cashier-screen" class="screen">
+        <aside class="dashboard-sidebar glass-panel">
+            <div class="sidebar-brand">
+                <div class="brand-icon">ف</div>
+                <div>
+                    <h3>Falafel Al-Damashqi</h3>
+                    <small>لوحة الكاشير</small>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-link active">الطلبات الحية</button>
+                <button class="nav-link">السجل</button>
+                <button class="nav-link">الإعدادات</button>
+            </nav>
+            <div class="sidebar-footer">
+                <span>حالة النظام</span>
+                <strong>جاهز</strong>
+            </div>
+        </aside>
+        <main class="dashboard-main">
+            <header class="page-header">
+                <div>
+                    <span class="eyebrow">مركز القيادة</span>
+                    <h2>الطلبات الواردة</h2>
+                </div>
+                <div class="header-actions">
+                    <button class="secondary-btn" onclick="closeRegisterReport()">🧾 إغلاق الصندوق (Z-Report)</button>
+                    <button class="ghost-btn" onclick="openWaiterMode()">عودة للكرسون</button>
+                </div>
+            </header>
+            <section class="dashboard-statements">
+                <div class="stat-card glass-panel">
+                    <span>طلبات اليوم</span>
+                    <strong id="live-orders-count">0</strong>
+                </div>
+                <div class="stat-card glass-panel">
+                    <span>إجمالي اليوم</span>
+                    <strong id="day-total">0 ليرة</strong>
+                </div>
+            </section>
+            <section id="order-board" class="dashboard-kanban order-board" aria-live="polite">
+                <div class="kanban-column">
+                    <div class="kanban-column-header">
+                        <h3>طلبات جديدة</h3>
+                        <span class="kanban-count" id="new-orders-count">0</span>
+                    </div>
+                    <div class="kanban-list" id="new-orders-list"></div>
+                </div>
+                <div class="kanban-column">
+                    <div class="kanban-column-header">
+                        <h3>قيد التحضير</h3>
+                        <span class="kanban-count" id="preparing-orders-count">0</span>
+                    </div>
+                    <div class="kanban-list" id="preparing-orders-list"></div>
+                </div>
+                <div class="kanban-column">
+                    <div class="kanban-column-header">
+                        <h3>جاهزة</h3>
+                        <span class="kanban-count" id="completed-orders-count">0</span>
+                    </div>
+                    <div class="kanban-list" id="completed-orders-list"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="print-section"></div>
+    <script src="script.js"></script>
+</body>
+</html>
